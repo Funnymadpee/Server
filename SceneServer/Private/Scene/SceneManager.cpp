@@ -1,13 +1,47 @@
 #include "../../Public/Scene/SceneManager.h"
+#include "../../Common/ThreadPool.h"
+#include <thread>
+#include <vector>
 
 void SceneManager::update(int delta) {
-    for (auto& [id, scene] : _scenes) {
-        scene->update(delta);
-    }
+    auto& pool = ThreadPool::instance();
+
+        for (auto& scene : _scenes) {
+            pool.enqueue([&scene, delta]() {
+                scene.second->update(delta);
+            });
+        }
+
+        //等待所有区域更新完成
+        pool.wait_all();
+
+        //主线程统一广播消息
+        broadcast_all();
 }
+
+void SceneManager::broadcast_all() {
+        std::cout << "主线程：所有区域更新完毕，开始广播消息\n";
+    }
 
 void SceneManager::init()
 {
+    //读取场景参数  暂时写死
+    _length = 256;       //长度
+    _width = 256;         //宽度
+    _sceneLength = 32;   //格子长度
+    _sceneWidth = 32;    //格子宽度   这样一张图就有16*16 = 64 个scene
+
+    int index = 0;
+    for(int j = 0; j< 256; j+=32)
+    {
+        for(int i = 0; i < 256; i+=32)
+        {
+            Scene* scene = new Scene(index);
+            _scenes.emplace(std::pair<int, Scene*>(index, scene));
+        }
+    }
+    
+    
 
 }
 

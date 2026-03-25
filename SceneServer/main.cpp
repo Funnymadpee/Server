@@ -10,8 +10,8 @@
 
 #include "./Public/Network/NetworkThread.h"
 
-const int FRAME_MS = 50;
-const int MAX_PROCESS_MSG = 10;
+const int FRAME_MS = 50;        //服务器帧数
+const int MAX_PROCESS_MSG = 10;     //网络每帧最大处理消息数量
 
 uint64_t getNowMs() {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -29,7 +29,7 @@ int main() {
 
     const uint16_t PORT = 9999;
 
-    //初始化
+    //初始化场景管理
     SceneManager::instance().init();
     SceneDispatcher::instance().init();
 
@@ -51,11 +51,11 @@ int main() {
 
         uint64_t now = getNowMs();
         int processed = 0;
-        //每帧固定处理消息的次数
+        //每帧固定处理消息的次数  将消息从缓冲区弹出 分发到具体区域的消息队列中
         while (processed < MAX_PROCESS_MSG)
         {
             SceneMessage* msg = MessageQueue::instance().pop();
-            SceneDispatcher::instance().dispatch(&msg->head, msg->body.data());
+            SceneDispatcher::instance().dispatch(msg);
             delete msg;
             processed++;
         }
@@ -64,7 +64,7 @@ int main() {
         uint64_t delta = getNowMs() - now;
         update(delta);
 
-        // 不忙的时候休眠稳定
+        // 不忙的时候休眠 稳定服务器tick
         if (delta < FRAME_MS) {
             std::this_thread::sleep_for(std::chrono::milliseconds(FRAME_MS - delta));
         }

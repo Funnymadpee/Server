@@ -35,5 +35,6 @@ public:
     int hp = 100;
     int maxHp = 100;
     BuffManager* buffMgr;
-    Scene*  Scene;  //所在的场景
+    int sceneId;
+    Scene*  Scene;  //所在的场景区域
 };

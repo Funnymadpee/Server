@@ -28,6 +28,10 @@ public:
     void broadcastAppear();
     void broadcastDisappear();
 
+    //时间
+    uint64_t getNowMs();
+
+
 private:
     uint64_t _playerId;
     int _sceneId;

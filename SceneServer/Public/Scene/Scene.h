@@ -1,21 +1,18 @@
 #pragma once
 #include <unordered_map>
 #include <unordered_set>
+#include <queue>
+#include <mutex>
+
 #include "../Object/GameObject.h"
 #include "../Object/Player.h"
 #include "Aoi.h"
+#include "../SceneServerDef.h"
 
-#define GRID_SIZE 10
+#define SCENESIZE 32
 
 class GameObject;
 class Player;
-
-class Grid{
-public:
-    Grid();
-    //格子里的对象
-    std::unordered_set<uint64_t> objects;
-};
 
 class Scene {
 public:
@@ -34,22 +31,20 @@ public:
     void playerLeave(uint64_t playerId);
     Player* findPlayer(uint64_t playerId);
 
-    //aoi
-    void addToAOI(uint64_t oid, AoiPos pos);
-    void removeFromAOI(uint64_t oid);
-    void updateAOI(uint64_t oid, AoiPos newPos);
-    std::unordered_set<uint64_t> getNearbyObjects(uint64_t oid);
 
-private:
-    // 计算格子所在的坐标
-    void posToGrid(AoiPos pos, int& gx, int& gy);
+    //场景消息
+    void push(SceneMessage* msg);
+    SceneMessage* pop();
+    void processMessage();  //场景消息处理
 
 private:
     int _sceneId;       //场景id
-    std::unordered_map<uint64_t, GameObject*> _objects;
-    std::unordered_map<uint64_t, Player*> _players;
-    //地图格子  坐标序号-->grid
-    std::unordered_map<int, std::unordered_map<int, Grid>> _grids; 
-    //对象所在位置
-    std::unordered_map<uint64_t, AoiPos> _objPositions;
+    std::unordered_map<uint64_t, GameObject*> _objects;   //场景内对象
+    std::unordered_map<uint64_t, Player*> _players;         //场景内玩家
+
+    //区域内的消息队列
+    std::queue<SceneMessage*>  _sceneQueue;
+    std::mutex                  _scenemutex;
+
+
 };

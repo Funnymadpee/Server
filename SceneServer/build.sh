@@ -6,6 +6,7 @@ Private/Battle/*.cpp \
 Private/Network/*.cpp \
 Private/Object/*.cpp \
 -o SceneServer.exe \
+-ID:/TrinityCore/Note/Projects/Server/SceneServer/Common \
 -IC:/msys64/mingw64/include \
 -LC:/msys64/mingw64/lib \
 -static \

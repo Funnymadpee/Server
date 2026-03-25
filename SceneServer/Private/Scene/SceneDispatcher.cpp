@@ -4,23 +4,12 @@ void SceneDispatcher::init(){
    
 }
 
-void SceneDispatcher::dispatch(InnerHead* head, const char* body)
+void SceneDispatcher::dispatch(SceneMessage* msg)
 {
-
-}
-
-void SceneDispatcher::handleEnterScene(InnerHead* head, const char* body)
-{
-
-}
-
-void SceneDispatcher::handleMove(InnerHead* head, const char* body)
-{
-
-}
-
-void SceneDispatcher::handleUseSkill(InnerHead* head, const char* body)
-{
+    //先通过消息获取到sceneid 压入具体的场景区域的消息队列
+    int index = msg->head.SceneId;
+    auto scene = SceneManager::instance().getScene(index);
+    scene->push(msg);
 
 }
 

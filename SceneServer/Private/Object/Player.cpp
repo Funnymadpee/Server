@@ -19,14 +19,14 @@ void Player::onEnterScene(int sceneId) {
     _sceneId = sceneId;
     _lastHeartBeat = getNowMs();
 
-    AoiManager::instance().addObject(_playerId);
+    //AoiManager::instance().addObject(_playerId);
     broadcastAppear();
 
     printf("[Player] %llu enter scene %d\n", _playerId, _sceneId);
 }
 
 void Player::onLeaveScene() {
-    AoiManager::instance().removeObject(_playerId);
+    //AoiManager::instance().removeObject(_playerId);
     broadcastDisappear();
 
     printf("[Player] %llu leave scene %d\n", _playerId, _sceneId);
@@ -57,7 +57,7 @@ void Player::broadcastDisappear() {
     //广播周围玩家消失
 }
 
-uint64_t getNowMs() {
+uint64_t Player::getNowMs() {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::system_clock::now().time_since_epoch()
     ).count();

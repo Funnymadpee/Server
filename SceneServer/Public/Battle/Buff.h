@@ -14,7 +14,7 @@ struct Buff {
 
 class BuffManager {
 public:
-    BuffManager();
+    BuffManager(){}
     void add(int id);
 
     void update(int deltaMs);
