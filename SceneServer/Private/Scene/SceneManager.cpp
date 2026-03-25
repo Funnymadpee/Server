@@ -5,7 +5,7 @@
 
 void SceneManager::update(int delta) {
     auto& pool = ThreadPool::instance();
-
+    //将场景区域的更新封装成任务投递给线程池
         for (auto& scene : _scenes) {
             pool.enqueue([&scene, delta]() {
                 scene.second->update(delta);
@@ -17,6 +17,9 @@ void SceneManager::update(int delta) {
 
         //主线程统一广播消息
         broadcast_all();
+
+    //场景区域的全局更新
+    AoiManager::instance().update(delta);
 }
 
 void SceneManager::broadcast_all() {

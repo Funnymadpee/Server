@@ -1,9 +1,11 @@
 // SceneManager.h
 #pragma once
 #include <unordered_map>
-#include "Scene.h"
 #include <thread>
 #include <vector>
+
+#include "Scene.h"
+#include "Aoi.h"
 
 #define NUMOFSCENETHREAD 4
 

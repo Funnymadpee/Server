@@ -3,13 +3,15 @@
 #include <cstdio>
 #include <chrono>
 
-Player::Player(uint64_t playerId)
-    : GameObject(playerId)
+Player::Player(uint64_t playerId, float mx, float my)
+    : GameObject(playerId,mx, my)
     , _playerId(playerId)
     , _sceneId(0)
     , _state(PLAYER_STATE_IDLE)
     , _lastHeartBeat(0)
 {
+    x = mx;
+    y = my;
 }
 
 Player::~Player() {

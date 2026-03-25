@@ -11,7 +11,7 @@ enum PlayerState {
 
 class Player : public GameObject {
 public:
-    explicit Player(uint64_t playerId);
+    explicit Player(uint64_t playerId, float x = 0, float y = 0);
     ~Player() override;
 
     // 生命周期

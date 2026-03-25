@@ -7,7 +7,11 @@ class Scene;
 
 class GameObject {
 public:
-    GameObject(uint64_t id) : id(id), buffMgr(new BuffManager()) {}
+    GameObject(uint64_t id, float mx, float my) 
+        : id(id), buffMgr(new BuffManager()), pos(id, x ,y) {
+            x = mx;
+            y = my;
+    }
     virtual ~GameObject() = default;
 
     // 每帧更新
@@ -22,7 +26,7 @@ public:
     // 位置
     int GetX(){return x;}
     int GetY(){return y;}
-    AoiPos GetPos(){ return pos;}
+    AoiNode GetAoiNode(){ return pos;}
     Scene* GetScene(){return Scene!=nullptr?Scene:nullptr;}
 
     uint64_t GetId(){return id;}
@@ -30,8 +34,8 @@ public:
 
     // 属性
     uint64_t id;
-    AoiPos pos;
-    int x, y;
+    AoiNode pos;
+    float x, y;
     int hp = 100;
     int maxHp = 100;
     BuffManager* buffMgr;
