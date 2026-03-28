@@ -152,3 +152,35 @@ void ServerConnection::send(uint64_t playerId,uint16_t protoId)
         });
 
 }
+
+void ServerConnection::send(LogicMessage* msg)
+{
+    // 组内部协议头
+    InnerHead head;
+    head.ServerId = msg->head.ServerId;
+    head.protoId = msg->head.protoId;
+    head.SceneId = msg->head.SceneId;
+    head.playerId = msg->head.playerId;
+    head.dataLen = msg->head.dataLen;
+
+    std::lock_guard<std::mutex> lock(m_sendMutex);
+    // 发送：头 + 包体
+    std::vector<boost::asio::const_buffer> bufs;
+    bufs.push_back(boost::asio::buffer(&head, sizeof(head)));
+    bufs.push_back(boost::asio::buffer(msg->body, head.dataLen));
+
+    boost::asio::async_write(m_socket, bufs,
+        [this, self = shared_from_this()](const boost::system::error_code& ec, size_t) {
+            if (ec) {
+                cerr << "[发送失败] 服务器ID:" << m_serverId << " 错误:" << ec.message() << endl;
+                m_connected = false;
+                m_socket.close();
+
+                // 自动重连
+                boost::asio::post(m_io, [this, self]() {
+                    doConnect();
+                });
+            }
+        });
+
+}

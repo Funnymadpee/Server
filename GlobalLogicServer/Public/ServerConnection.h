@@ -6,6 +6,8 @@
 #include <mutex>
 #include <atomic>
 
+#include "GlobalLogicDef.h"
+
 using boost::asio::ip::tcp;
 
 // router的连接代理 连到后端服务
@@ -31,6 +33,7 @@ public:
     //发送数据
     void send(uint64_t playerId,uint16_t protoId, const char* data, uint16_t len);
     void send(uint64_t playerId,uint16_t protoId);
+    void send(LogicMessage* msg);
 
     //连接状态
     bool isConnected() const { return m_connected; }

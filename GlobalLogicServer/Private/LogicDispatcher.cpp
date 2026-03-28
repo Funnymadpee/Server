@@ -12,6 +12,10 @@ using namespace std;
             uint64_t playerId = msg->head.playerId;
             callBagService(playerId);
         };
+        //连接初始场景服 场景服1 8801
+        cout << "LogicDispatcher 开始连接场景服 :"<< 8801  << endl;
+       initSceneConn(ioc, 1, 8801);
+
     }
 
     void LogicDispatcher::dispatch(LogicMessage* msg){
@@ -32,14 +36,23 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////
     // 初始化连接 Router
     void LogicDispatcher::initRouterConn(boost::asio::io_context& io) {
-        // 复用你的 ServerConnection 连接 Router
+        // ServerConnection 连接 Router
         _routerConn = ServerConnection::create(io, "127.0.0.1", 8888, 0);
         _routerConn->start();
     }
 
+    //初始化连接
+    void LogicDispatcher::initSceneConn(boost::asio::io_context& io, int serverid, int port) {
+        // ServerConnection 连接 场景服
+        cout << "LogicDispatcher 开始连接场景服 :"<< serverid  << endl;
+        auto _Conn = ServerConnection::create(io, "127.0.0.1", port, 0);
+        _SceneConns.emplace(serverid, _Conn);
+        _Conn->start();
+    }
+
 ////////////////////////////////////////////////////////////////////////
     // 发给 Router：绑定玩家到场景
-    void LogicDispatcher::sendBindPlayer(uint64_t playerId, int sceneId) {
+    void LogicDispatcher::sendBindPlayer(uint64_t playerId, int serverid, int sceneId) {
         //第二个参数暂时瞎写
         _routerConn->send(playerId, 0,0x1001,(const char*)&sceneId, sizeof(sceneId));
     }
@@ -50,11 +63,24 @@ using namespace std;
     }
 
 
+    //发给scene 生成角色
+    void LogicDispatcher::sendCreatePlayer(LogicMessage* msg)
+    {
+        int serverId = msg->head.ServerId;
+        auto it = _SceneConns.find(serverId);
+        if(it != _SceneConns.end())
+        {
+            auto conn = it->second;
+            conn->send(msg);
+        }
+    }
+
 /////////////////////////////////////////////////////////////////////
     //走微服务
     //
     void LogicDispatcher::handleClientMsg(LogicMessage* msg) {
         //相关处理
+        sendCreatePlayer(msg);
     }
 
     // 调用背包微服务

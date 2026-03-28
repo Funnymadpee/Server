@@ -3,16 +3,18 @@
 #include "./Public/MessageQueue.h"
 #include "./Public/LogicDispatcher.h"
 
-
 int main() {
-    const uint16_t PORT = 8889;
+    // 解决 Windows 控制台中文乱码
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
 
+    const uint16_t PORT = 8889;
     const int MAX_PROCESS_MSG = 10;
 
     //启动网络线程
     NetworkThread::instance().start(PORT);
 
-    //注册协议 连接nats
+    //注册协议 连接nats  连接场景服
     LogicDispatcher::instance().init();
 
     //主线程逻辑线程
@@ -24,6 +26,8 @@ int main() {
         while (processed < MAX_PROCESS_MSG)
         {
             LogicMessage* msg = MessageQueue::instance().pop();
+            if(msg == nullptr)
+                break;
             LogicDispatcher::instance().dispatch(msg);
             delete msg;
             processed++;

@@ -12,10 +12,14 @@ void MessageQueue::push(LogicMessage* msg) {
 }
 
 LogicMessage* MessageQueue::pop() {
-    std::unique_lock<std::mutex> lock(_mutex);
-    _cv.wait(lock, [this]() { return !_queue.empty(); });
-
-    LogicMessage* msg = _queue.front();
-    _queue.pop();
-    return msg;
+    std::unique_lock<std::mutex> lock(_mutex, std::try_to_lock);
+    if (lock) {
+        while (!_queue.empty()) {
+            auto msg = std::move(_queue.front());
+            _queue.pop();
+            //消息
+            return msg;
+        }
+    }
+    return nullptr;
 }
