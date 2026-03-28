@@ -18,6 +18,7 @@ struct InnerHead {
     uint16_t protoId;       //协议id
     int playerId;           //玩家uid
     int ServerId;           //服务器id
+    int SceneId;            //场景id
     uint16_t dataLen;    // 客户端包长度
 };
 #pragma pack(pop)
