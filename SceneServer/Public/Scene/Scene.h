@@ -37,6 +37,11 @@ public:
     SceneMessage* pop();
     void processMessage();  //场景消息处理
 
+    int getLeftX(){return left_x;}
+    int getRightX(){return right_x;}
+    int getTopY(){return top_y;}
+    int getBottonY(){return botton_y;}
+
 private:
     int _sceneId;       //场景id
     std::unordered_map<uint64_t, GameObject*> _objects;   //场景内对象
@@ -45,6 +50,11 @@ private:
     //区域内的消息队列
     std::queue<SceneMessage*>  _sceneQueue;
     std::mutex                  _scenemutex;
+
+
+    //场景边界
+    int left_x, right_x;
+    int top_y, botton_y;
 
 
 };

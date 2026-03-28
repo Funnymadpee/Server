@@ -21,13 +21,18 @@ uint64_t getNowMs() {
 
 void update(int delta)
 {
-    // 场景帧更新
+    // 场景帧更新  投递场景更新任务
     SceneManager::instance().update(delta);
+    //场景区域的全局aoi更新
+    //AoiManager::instance().update(delta);
 }
 
 int main() {
+    // 解决 Windows 控制台中文乱码
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
 
-    const uint16_t PORT = 9999;
+    const uint16_t PORT = 8801;
 
     //初始化场景管理
     SceneManager::instance().init();
@@ -43,8 +48,17 @@ int main() {
     NatsClient::instance().subscribe("service.scene.1001", [](const InnerHead& head, const char* body) {
         SceneMessage msg{};
         msg.head = head;
-        msg.body.assign(body, body + strlen(body));
-        MessageQueue::instance().push(&msg);
+        const char* body_data = body;
+        size_t body_len = strlen(body_data);
+
+        if (body_len >= sizeof(msg.body)) {
+            body_len = sizeof(msg.body) - 1;
+        }
+        memcpy(msg.body, body_data, body_len);
+        msg.body[body_len] = '\0';
+
+        SceneMessage* msg_ptr = new SceneMessage(msg); // 拷贝构造
+        MessageQueue::instance().push(msg_ptr);
     });
 
     while (true) {
@@ -55,6 +69,8 @@ int main() {
         while (processed < MAX_PROCESS_MSG)
         {
             SceneMessage* msg = MessageQueue::instance().pop();
+            if(msg == nullptr)
+                break;
             SceneDispatcher::instance().dispatch(msg);
             delete msg;
             processed++;
@@ -63,11 +79,7 @@ int main() {
         //世界更新
         uint64_t delta = getNowMs() - now;
         update(delta);
-
-        // 不忙的时候休眠 稳定服务器tick
-        if (delta < FRAME_MS) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(FRAME_MS - delta));
-        }
+        
     }
     return 0;
 }

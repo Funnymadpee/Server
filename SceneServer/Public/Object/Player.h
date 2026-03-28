@@ -31,6 +31,8 @@ public:
     //时间
     uint64_t getNowMs();
 
+    //死亡
+    virtual void onDie(uint64_t killerId){}
 
 private:
     uint64_t _playerId;

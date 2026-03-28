@@ -1,6 +1,17 @@
 #include "../../Public/Scene/Scene.h"
 
 Scene::Scene(int sceneId) : _sceneId(sceneId) {
+    //计算边界
+    int div = sceneId / 16;   //行列各16个
+    int mod = sceneId % 16;
+
+
+    left_x = mod * 32;
+    right_x = (mod + 1 ) * 32;
+
+    top_y = div * 32;
+    botton_y = (div + 1) * 32;
+
 }
 
 Scene::~Scene() {
@@ -37,10 +48,12 @@ void Scene::playerLeave(uint64_t playerId) {
 
 
 void Scene::update(int delta) {
-    //如果场景内玩家为空 直接返回
-    if(_players.empty()) return;
+
+    if(_sceneQueue.empty())
+        return;
 
     //处理场景消息
+    processMessage();
 
 
     // 更新所有对象
@@ -79,7 +92,7 @@ void Scene::push(SceneMessage* msg) {
 }
 
 SceneMessage* Scene::pop() {
-    std::unique_lock<std::mutex> lock(_scenemutex);
+    std::lock_guard<std::mutex> lock(_scenemutex);
     SceneMessage* msg = _sceneQueue.front();
     _sceneQueue.pop();
     return msg;
@@ -91,6 +104,29 @@ void Scene::processMessage()
     if(msg!= nullptr)
     {
         ////根据协议id做处理
+        if(msg->head.protoId == 7001)
+        {
+            //角色进入场景  没有就创建角色
+            LocData loc_data;
+            memcpy(&loc_data, msg->body, sizeof(LocData));
+
+            int playerid = msg->head.playerId;
+            auto it = _players.find(playerid);
+            if(it == _players.end())
+            {
+                auto newpalyer = new Player(playerid, loc_data.loc_x, loc_data.loc_y);
+                playerEnter(newpalyer);
+                
+            }
+            else
+            {
+                //调用进入场景
+                auto player = it->second;
+                playerEnter(player);
+            }
+        }
+
+        delete msg;
     }
 
 

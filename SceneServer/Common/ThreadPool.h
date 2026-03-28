@@ -17,7 +17,7 @@ public:
     // 提交任务到线程池  生产者-消费者
     template<class F>
     auto enqueue(F&& f) -> std::future<decltype(f())> {
-        auto task = std::make_shared<std::packaged_task<decltype(f())()>>(std::forward<F>(f));  //任务函数包装
+        auto task = std::make_shared<std::packaged_task<decltype(f())()>>(std::forward<F>(f));  //任务函数包装  传进来对象完美转发
         std::future<decltype(f())> res = task->get_future();
         {
             std::unique_lock<std::mutex> lock(queue_mutex);

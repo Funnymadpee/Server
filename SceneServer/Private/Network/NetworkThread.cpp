@@ -13,7 +13,14 @@ NetworkThread::NetworkThread()
 {}
 
 void NetworkThread::start(uint16_t port) {
-    _acceptor.bind(tcp::endpoint(tcp::v4(), port));
+    tcp::endpoint ep(boost::asio::ip::address_v4::any(), port);
+    if (_acceptor.is_open()) {
+        _acceptor.close();
+    }
+    _acceptor.open(ep.protocol());
+    //允许端口复用
+    _acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+    _acceptor.bind(ep);
     _acceptor.listen();
     _thread = std::thread(&NetworkThread::run, this);
     cout << "[网络线程] 启动成功，监听端口:" << port << endl;
@@ -27,6 +34,7 @@ void NetworkThread::run() {
 void NetworkThread::startAccept() {
     auto sock = make_shared<tcp::socket>(_io);
     _acceptor.async_accept(*sock, [this, sock](const boost::system::error_code& ec) {
+        cout << "[网络线程] 监听到连接 :" << sock->remote_endpoint().port() << endl;
         if (!ec) readSession(sock); //开始读数据
         startAccept();
     });
@@ -45,10 +53,20 @@ void NetworkThread::readSession(std::shared_ptr<tcp::socket> sock) {
                 [this,sock, head, bodyBuf](const boost::system::error_code& ec, size_t) {
                     if (ec) return;
 
-                    // 生产消息 压入队列
                     SceneMessage* msg = new SceneMessage();
                     msg->head = head;
-                    msg->body = *bodyBuf;
+
+                    // 安全检查
+                    if (head.dataLen > sizeof(msg->body)) {
+                        delete msg;
+                        readSession(sock);
+                        return;
+                    }
+
+                    // 拷贝vector数据body 数组
+                    memcpy(msg->body, bodyBuf->data(), head.dataLen);
+
+                    // 入队
                     MessageQueue::instance().push(msg);
                     readSession(sock);
                 });

@@ -1,7 +1,11 @@
 #include "../../Public/Object/Player.h"
 #include "../../Public/Scene/Aoi.h"
+#include "../../Public/Scene/SceneManager.h"
 #include <cstdio>
 #include <chrono>
+#include <iostream>
+
+class SceneManager;
 
 Player::Player(uint64_t playerId, float mx, float my)
     : GameObject(playerId,mx, my)
@@ -25,6 +29,17 @@ void Player::onEnterScene(int sceneId) {
     broadcastAppear();
 
     printf("[Player] %llu enter scene %d\n", _playerId, _sceneId);
+    std::cout << "玩家当前的位置是 " << x << "," << y <<std::endl;
+    int left = SceneManager::instance().getScene(_sceneId)->getLeftX();
+    int right = SceneManager::instance().getScene(_sceneId)->getRightX();
+    int top =  SceneManager::instance().getScene(_sceneId)->getTopY();
+    int bot = SceneManager::instance().getScene(_sceneId)->getBottonY();
+
+    std::cout << "当前地图的边界点是" << std::endl;
+    std::cout << left << "," << top << std::endl; 
+    std::cout << right << "," << top << std::endl; 
+    std::cout << left << "," << bot << std::endl; 
+    std::cout << right << "," << bot << std::endl; 
 }
 
 void Player::onLeaveScene() {

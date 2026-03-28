@@ -12,28 +12,25 @@ void SceneManager::update(int delta) {
             });
         }
 
-        //等待所有区域更新完成
-        pool.wait_all();
-
         //主线程统一广播消息
         broadcast_all();
 
-    //场景区域的全局更新
-    AoiManager::instance().update(delta);
 }
 
 void SceneManager::broadcast_all() {
-        std::cout << "主线程：所有区域更新完毕，开始广播消息\n";
+        // std::cout << "主线程：所有区域更新完毕，开始广播消息\n";
     }
 
 void SceneManager::init()
 {
+    std::cout << "场景开始初始化\n";
     //读取场景参数  暂时写死
     _length = 256;       //长度
     _width = 256;         //宽度
     _sceneLength = 32;   //格子长度
     _sceneWidth = 32;    //格子宽度   这样一张图就有16*16 = 64 个scene
 
+    //左上角为原点0,0  从左到右 从上到下
     int index = 0;
     for(int j = 0; j< 256; j+=32)
     {
@@ -41,6 +38,7 @@ void SceneManager::init()
         {
             Scene* scene = new Scene(index);
             _scenes.emplace(std::pair<int, Scene*>(index, scene));
+            index++;
         }
     }
     
